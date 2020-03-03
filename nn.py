@@ -20,7 +20,7 @@ data = pd.read_csv(filename)
 # Note that the labeled data should be in the first column
 features = data.values[:, 1:]
 output = data.values[:, 0]
-x_train, x_test, y_train, y_test = train_test_split(features, output, test_size=0.99)
+x_train, x_test, y_train, y_test = train_test_split(features, output, test_size=0.3)
 
 X_features = x_train
 y_label = y_train
