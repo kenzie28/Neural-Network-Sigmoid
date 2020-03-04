@@ -20,7 +20,7 @@ data = pd.read_csv(filename)
 # Note that the labeled data should be in the first column
 features = data.values[:, 1:]
 output = data.values[:, 0]
-x_train, x_test, y_train, y_test = train_test_split(features, output, test_size=0.3)
+x_train, x_test, y_train, y_test = train_test_split(features, output, train_size=0.001)
 
 X_features = x_train
 y_label = y_train
@@ -79,7 +79,7 @@ gradients = []
 for i in range(len(network)):
     gradients.append(np.zeros(network[i].shape))
 
-training_steps = 300
+training_steps = int(input("Input number of training steps: "))
 
 for n in range(training_steps):
     print("Training iteration: " + str(n + 1))
@@ -197,7 +197,6 @@ for i in range(len(network)):
     input_layer = np.append(np.ones((len(X_features), 1)), input_layer, axis=1).T
 
     output = np.dot(parameter, input_layer).T
-    print(output.shape)
     layer.append(output)
     
 result = layer[-1]
@@ -224,3 +223,47 @@ print("Using " + str(training_samples) + " training examples")
 print("With network shape: ")
 for layer in network:
     print(layer.shape)
+
+
+filename = "test.csv"
+
+data = pd.read_csv(filename)
+
+X_features = data.values[:, :]
+
+m = len(X_features)
+num_features = len(X_features[0])
+
+layer = []
+layer.append(X_features)
+
+for i in range(len(network)):
+    input_layer = layer[i]
+    parameter = network[i]
+
+    input_layer = np.append(np.ones((len(X_features), 1)), input_layer, axis=1).T
+
+    output = np.dot(parameter, input_layer).T
+    layer.append(output)
+    
+result = layer[-1]
+
+predictions = []
+for i in range(len(result)):
+    predict = 0
+    highest_prob = 0
+    for j in range(len(result[i])):
+        if result[i][j] > highest_prob:
+            predict = j
+            highest_prob = result[i][j]
+    predictions.append(predict)
+ 
+index = []
+for i in range(1, len(predictions) + 1):
+    index.append(i)
+    
+table = np.array([index, predictions]).T.tolist()
+
+data = pd.DataFrame(table, columns = ["index", "prediction"])
+
+data.to_csv("prediction.csv")
