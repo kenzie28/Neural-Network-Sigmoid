@@ -4,13 +4,6 @@ import numpy as np
 import math
 from sklearn.model_selection import train_test_split
 
-# Function used to go through a matrice passed as a parameter and randomize the values
-def random_initialize(matrice, epsilon=0.12):
-    # randomize the initialization
-    for row in range(len(matrice)):
-        for col in range(len(matrice[row])):            
-            matrice[row][col] = matrice[row][col] * 2 * epsilon - epsilon
-
 # Load the dataset
 filename = input("Input file name: ")
 print("Loading dataset...")
@@ -20,7 +13,7 @@ data = pd.read_csv(filename)
 # Note that the labeled data should be in the first column
 features = data.values[:, 1:]
 output = data.values[:, 0]
-x_train, x_test, y_train, y_test = train_test_split(features, output, train_size=0.001)
+x_train, x_test, y_train, y_test = train_test_split(features, output, train_size=0.005, random_state=1)
 
 X_features = x_train
 y_label = y_train
@@ -44,8 +37,8 @@ network = np.empty(1 + num_layers, dtype=np.ndarray)
 num_nodes = int(input("Number of nodes to use for layer 1: "))
 
 # Generates the first layer and stores it to the network
-first_layer = np.random.rand(num_nodes, num_features + 1)
-random_initialize(first_layer)
+first_layer = np.random.randn(num_nodes, num_features + 1) * np.sqrt(1/(num_features))
+
 network[0] = first_layer
 
 # Asks for the number of nodes to use for each layer and creates the layer accordingly
@@ -53,15 +46,13 @@ network[0] = first_layer
 # All layers will be randomly initialized and stored in network
 for i in range(num_layers - 1):
     num_nodes = int(input("Number of nodes to use for layer " + str(i + 2) + ": "))
-    layer = np.random.rand(num_nodes, len(network[i]) + 1)
-    random_initialize(layer)
+    layer = np.random.randn(num_nodes, len(network[i]) + 1) * np.sqrt(1/(len(network[i]) + 1))
     network[i + 1] = layer
 
 num_labels = len(np.unique(y_label))
 
 # Creates the final layer of output nodes
-output_nodes = np.random.rand(num_labels, len(network[-2]) + 1)
-random_initialize(output_nodes)
+output_nodes = np.random.randn(num_labels, len(network[-2]) + 1) * np.sqrt(1/(len(network[-2]) + 1))
 network[-1] = output_nodes
 
 print("Network Shape:")
@@ -172,7 +163,7 @@ for n in range(training_steps):
     # Updates the network with gradients (regularized)
     for i in range(len(gradients)):
         gradients[i] /= m
-        network[i] -= gradients[i] * (1.01**(training_steps - n)) + (reg_term / (2 * m)) * network[i]
+        network[i] -= gradients[i] + (reg_term / (2 * m)) * network[i]
 
 print("Backpropogation Complete")
 
