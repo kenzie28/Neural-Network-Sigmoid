@@ -5,15 +5,15 @@ import math
 from sklearn.model_selection import train_test_split
 
 # Load the dataset
-filename = input("Input file name: ")
 print("Loading dataset...")
-data = pd.read_csv(filename)
+data = pd.read_csv("train.csv")
 
 # Transforms the data to numpy arrays and splits it into train and test sets
 # Note that the labeled data should be in the first column
 features = data.values[:, 1:]
 output = data.values[:, 0]
-x_train, x_test, y_train, y_test = train_test_split(features, output, train_size=0.005, random_state=1)
+train_size = float(input("What percentage of the sample do you want to use? ")) / 100
+x_train, x_test, y_train, y_test = train_test_split(features, output, train_size=train_size)
 
 X_features = x_train
 y_label = y_train
@@ -215,46 +215,48 @@ print("With network shape: ")
 for layer in network:
     print(layer.shape)
 
+choice = input("Apply network to test file? (y/n)\n")
 
-filename = "test.csv"
+if 'y' in choice:
+    filename = "test.csv"
 
-data = pd.read_csv(filename)
+    data = pd.read_csv(filename)
 
-X_features = data.values[:, :]
+    X_features = data.values[:, :]
 
-m = len(X_features)
-num_features = len(X_features[0])
+    m = len(X_features)
+    num_features = len(X_features[0])
 
-layer = []
-layer.append(X_features)
+    layer = []
+    layer.append(X_features)
 
-for i in range(len(network)):
-    input_layer = layer[i]
-    parameter = network[i]
+    for i in range(len(network)):
+        input_layer = layer[i]
+        parameter = network[i]
 
-    input_layer = np.append(np.ones((len(X_features), 1)), input_layer, axis=1).T
+        input_layer = np.append(np.ones((len(X_features), 1)), input_layer, axis=1).T
 
-    output = np.dot(parameter, input_layer).T
-    layer.append(output)
+        output = np.dot(parameter, input_layer).T
+        layer.append(output)
+        
+    result = layer[-1]
+
+    predictions = []
+    for i in range(len(result)):
+        predict = 0
+        highest_prob = 0
+        for j in range(len(result[i])):
+            if result[i][j] > highest_prob:
+                predict = j
+                highest_prob = result[i][j]
+        predictions.append(predict)
     
-result = layer[-1]
+    index = []
+    for i in range(1, len(predictions) + 1):
+        index.append(i)
+        
+    table = np.array([index, predictions]).T.tolist()
 
-predictions = []
-for i in range(len(result)):
-    predict = 0
-    highest_prob = 0
-    for j in range(len(result[i])):
-        if result[i][j] > highest_prob:
-            predict = j
-            highest_prob = result[i][j]
-    predictions.append(predict)
- 
-index = []
-for i in range(1, len(predictions) + 1):
-    index.append(i)
-    
-table = np.array([index, predictions]).T.tolist()
+    data = pd.DataFrame(table, columns = ["ImageId", "Label"])
 
-data = pd.DataFrame(table, columns = ["index", "prediction"])
-
-data.to_csv("prediction.csv")
+    data.to_csv("prediction.csv")
