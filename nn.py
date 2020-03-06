@@ -156,14 +156,16 @@ for n in range(training_steps):
         X = np.reshape(X, (-1, 1))
         gradients[0] = np.dot(X, delta_layers[0]).T
 
+        # Updates the network with gradients (regularized)
+        for i in range(len(gradients)):
+            gradients[i] /= m
+            network[i] -= gradients[i] + (reg_term / (2 * m)) * network[i]
+
     # Prints out cost function
     J /= m
     print(np.sum(J))
 
-    # Updates the network with gradients (regularized)
-    for i in range(len(gradients)):
-        gradients[i] /= m
-        network[i] -= gradients[i] + (reg_term / (2 * m)) * network[i]
+
 
 print("Backpropogation Complete")
 
@@ -260,3 +262,5 @@ if 'y' in choice:
     data = pd.DataFrame(table, columns = ["ImageId", "Label"])
 
     data.to_csv("prediction.csv")
+
+    print("Save complete")
